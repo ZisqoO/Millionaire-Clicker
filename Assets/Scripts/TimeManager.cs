@@ -24,4 +24,5 @@ public class TimeManager : MonoBehaviour
             Debug.Log("Uygulama kapandýktan sonra geçen süre: " + totalSecondsSinceClosed + " saniye");
         }
     }
+    
 }

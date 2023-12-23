@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,7 +14,8 @@ public class ProgressBar : MonoBehaviour
     }
     void Start()
     {
-      
+        progressSlider.interactable = false;
+
     }
     void Update()
     {
