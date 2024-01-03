@@ -7,36 +7,52 @@ using UnityEngine.UI;
 [Serializable]
 public class GameManager : MonoBehaviour
 {
-    //public SaveManager saveManager;
     public Image notificationImage;
     public TextMeshProUGUI mainBalance;
+    public TextMeshProUGUI comeBackIncome;
     public float mainBalanceValue;
     public GameObject managerTab;
     public List<BlockSystem> blockList = new List<BlockSystem>();
     public List<BlockSystem> ActiveblockList = new List<BlockSystem>();
-
- 
+    float totalCycleIncome = 0;
+    public GameObject RestartGamePanel;
+    public TimeManager timeManager;
+    public bool isFirstRun = false;
+    bool managerCount = false;
     void Start()
     {
 
+        //RestartGamePanel.gameObject.SetActive(false);
+        managerCount = PlayerPrefs.GetInt(nameof(managerCount)) == 1;
+        //isFirstRun = PlayerPrefs.GetInt(nameof(isFirstRun)) == 1;
 
-        //if (PlayerPrefs.HasKey("mainBalance"))
-        //{
-        //    mainBalanceValue = PlayerPrefs.GetFloat("mainBalance");
-        //}
-        //else
-        //{
-        //    mainBalanceValue = 49;
-        //}
+       
+
+        if (PlayerPrefs.HasKey("mainBalance"))
+        {
+            mainBalanceValue = PlayerPrefs.GetFloat("mainBalance");
+        }
+        else
+        {
+            mainBalanceValue = 49;
+        }
 
 
 
-
+        isFirstRun = true;
+        PlayerPrefs.SetInt(nameof(isFirstRun), isFirstRun ? 1 : 0);
+        Debug.Log("isFirstRun: " + isFirstRun);
         mainBalance.text = mainBalanceValue.ToString("F2");
         managerTab.SetActive(false);
         LoadGame();
         BlockUpdate();
-
+        IncomeCalculator();
+        //if (PlayerPrefs.GetInt(nameof(isFirstRun)) == 1 && managerCount == true)
+        //{
+        //    RestartGamePanel.gameObject.SetActive(true);
+        //}
+        //PlayerPrefs.DeleteKey(nameof(isFirstRun));
+        //Debug.Log("isFirstRun Value: " + PlayerPrefs.GetInt(nameof(isFirstRun)));
     }
 
     
@@ -87,43 +103,37 @@ public class GameManager : MonoBehaviour
             block.activationButton.interactable = false;
         }
 
-        if (mainBalanceValue >= block.managerPriceValue && block.isManagerBought == false)
+        if (mainBalanceValue >= block.managerPriceValue && block.isActivationButtonClicked == true && block.isManagerBought == false)
         {
+            Color activeColor = new Color(72f / 255, 126f / 255, 176f /255);
             block.managerButton.interactable = true;
+           
             if (!blockList.Contains(block))
             {
                 blockList.Add(block);
-
+                block.managerButton.transform.GetChild(0).GetComponent<Image>().color = activeColor;
             }
         }
         else if (mainBalanceValue < block.managerPriceValue)
         {
             block.managerButton.interactable = false;
+            Color disableColor = new Color(72f / 255, 126f / 255, 176f / 255);
             if (blockList.Contains(block))
             {
 
                 blockList.Remove(block);
+                block.managerButton.transform.GetChild(0).GetComponent<Image>().color = disableColor;
             }
         }
         
     }
-    public void BalanceReset()
-    {
-        PlayerPrefs.DeleteAll();
-        mainBalanceValue = 49;
-        PlayerPrefs.SetFloat("mainBalance", mainBalanceValue);
-        PlayerPrefs.Save();
-        mainBalance.text = mainBalanceValue.ToString("F2");
-        Debug.Log(mainBalanceValue);
-        managerTab.SetActive(false);
-    }
+    
     public void BlockUpdate()
     {
         for (int i = 0; i < ActiveblockList.Count; i++)
         {
             BlockBalanceUpdate(ActiveblockList[i]);
-            //ActiveblockList[i].SaveData(ActiveblockList[i].name);
-            ActiveblockList[i].SaveGame();
+            ActiveblockList[i].SaveData(ActiveblockList[i].name);
 
         }
         
@@ -135,21 +145,46 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetFloat("mainBalance", mainBalanceValue);
         
     }
-    public void DeleteSaveData()
-    {
-        for (int i = 0; i < ActiveblockList.Count; i++)
-        {
-            PlayerPrefs.DeleteAll();
-        }
-    }
+    
     public void LoadGame()
     {
         for (int i = 0; i < ActiveblockList.Count; i++)
         {
 
-            //ActiveblockList[i].LoadData(ActiveblockList[i].name);
-            ActiveblockList[i].LoadGame();
+            ActiveblockList[i].LoadData(ActiveblockList[i].name);
 
         }
+    }
+    
+    public void IncomeCalculator()
+    {
+        
+        for (int i = 0; i < ActiveblockList.Count; i++)
+        {
+            if(ActiveblockList[i].isManagerBought == true)
+            {
+                managerCount = true;
+                PlayerPrefs.SetInt(nameof(managerCount), managerCount ? 1 : 0);
+                ActiveblockList[i].ReopenApp();
+            }
+            totalCycleIncome += ActiveblockList[i].incomeFromCycle;
+
+            Debug.Log(totalCycleIncome);
+            Debug.Log("managerCount: " + managerCount);
+        }
+        
+        //comeBackIncome.text = "$ " + totalCycleIncome.ToString();
+        if (PlayerPrefs.GetInt(nameof(isFirstRun)) == 1 && managerCount == true)//************************
+        {
+            RestartGamePanel.gameObject.SetActive(true);
+            comeBackIncome.text = "$ " + totalCycleIncome.ToString();
+        }
+        Debug.Log("totalCycleIncome: " + totalCycleIncome);
+    }
+    public void ComeBackAcceptButton()
+    {
+        RestartGamePanel.gameObject.SetActive(false);
+        mainBalanceValue += totalCycleIncome;
+        MainBalanceUpdate();
     }
 }

@@ -29,8 +29,8 @@ public class BlockSystemData
 [Serializable]
 public class BlockSystem : MonoBehaviour
 {
-    
-    
+
+    public TimeManager timeManager;
     public ProgressBar progressBar;
     public GameManager gameManager;
     TextMeshProUGUI iconLevelText;
@@ -51,6 +51,8 @@ public class BlockSystem : MonoBehaviour
     public float progressBarTextValue;
 
     float reservedPBValue;
+    float deltaSecondsAppQuit;
+    public float incomeFromCycle = 0;
 
     public float managerPriceValue;
     public float countdownValue;
@@ -60,6 +62,7 @@ public class BlockSystem : MonoBehaviour
     public bool isManagerBought = false;
     public bool isActivationButtonClicked = false;
     
+    
     private void Awake()
     {
         
@@ -67,19 +70,7 @@ public class BlockSystem : MonoBehaviour
     void Start()
     {
         Initialising();
-        //LoadGame();
-        //scriptableObject.LoadDataFromFile();
-        //gameManager.LoadGame();
-        //gameManager.BlockUpdate();
-
-
-    }
-    void Update()
-    {
-
-        
-
-
+        deltaSecondsAppQuit = timeManager.deltaSecondsSinceClosed;
     }
     public void IconButton()
     {
@@ -101,7 +92,9 @@ public class BlockSystem : MonoBehaviour
                 {
                     float minutes = tempCountValue / 60;
                     float seconds = tempCountValue % 60;
-                    countdownText.text = minutes.ToString() + " M " + seconds.ToString() + " S";
+                    float finalMinutes = Mathf.Floor(minutes);
+                    float finalSeconds = Mathf.Floor(seconds);
+                    countdownText.text = finalMinutes.ToString() + " M " + finalSeconds.ToString() + " S";
                 }
                 else
                 {
@@ -201,15 +194,17 @@ public class BlockSystem : MonoBehaviour
                 tempCountValue--;
                 if (tempCountValue > 60)
                 {
-                    double minutes = tempCountValue / 60;
+                    float minutes = tempCountValue / 60;
                     float seconds = tempCountValue % 60;
-                    countdownText.text = minutes.ToString() +" M " + seconds.ToString() + " S";
+                    float finalMinutes = Mathf.Floor(minutes);
+                    float finalSeconds = Mathf.Floor(seconds);
+                    countdownText.text = finalMinutes.ToString() + " M " + finalSeconds.ToString() + " S";
                 }
                 else
                 {
                     countdownText.text = tempCountValue.ToString() + " S";
                 }
-                //countdownText.text = tempCountValue.ToString() + " S";
+               
                 yield return new WaitForSeconds(1);
             }
             else
@@ -283,118 +278,82 @@ public class BlockSystem : MonoBehaviour
         activationButtonValue = float.Parse(activationButtonPriceText.text);
 
     }
-    public void BlockReset()
+    public void SaveData(string fileName)
     {
-        PlayerPrefs.DeleteAll();
+        BlockSystemData data = new BlockSystemData();
+        data.activationButtonValue = activationButtonValue;
+        data.countdownValue = countdownValue;
+        data.iconLevelCapTextValue = iconLevelCapTextValue;
+        data.iconLevelTextValue = iconLevelTextValue;
 
+        data.isManagerBought = isManagerBought;
+        data.managerPriceValue = managerPriceValue;
+        data.progressBarTextValue = progressBarTextValue;
+        data.upgradeButtonValue = upgradeButtonValue;
+        data.isActivationButtonClicked = isActivationButtonClicked;
+
+
+        string filePath = Application.persistentDataPath + "/" + fileName + ".json";
+        string json = JsonUtility.ToJson(data);
+        File.WriteAllText(filePath, json);
+
+        Debug.Log(fileName);
     }
-    //public void SaveData(string fileName)
-    //{
-    //    BlockSystemData data = new BlockSystemData();
-    //    data.activationButtonValue = activationButtonValue;
-    //    data.countdownValue = countdownValue;
-    //    data.iconLevelCapTextValue = iconLevelCapTextValue;
-    //    data.iconLevelTextValue = iconLevelTextValue;
-       
-    //    data.isManagerBought = isManagerBought;
-    //    data.managerPriceValue = managerPriceValue;
-    //    data.progressBarTextValue = progressBarTextValue;
-    //    data.upgradeButtonValue = upgradeButtonValue;
-    //    data.isActivationButtonClicked = isActivationButtonClicked;
-        
 
-    //string filePath = Application.persistentDataPath + "/" + fileName + ".json";
-    //    string json = JsonUtility.ToJson(data);
-    //    File.WriteAllText(filePath, json);
-
-    //    Debug.Log(fileName);
-    //}
-
-    //// Verileri yüklemek için
-    //public void LoadData(string fileName)
-    //{
-    //    string filePath = Application.persistentDataPath + "/" + fileName + ".json";
-
-    //    if (File.Exists(filePath))
-    //    {
-    //        string json = File.ReadAllText(filePath);
-    //        BlockSystemData data = JsonUtility.FromJson<BlockSystemData>(json);
-
-    //        // Verileri geri yükleyin
-    //        activationButtonValue = data.activationButtonValue;
-
-    //        managerPriceValue = data.managerPriceValue;
-
-    //        countdownValue = data.countdownValue;
-    //        countdownText.text = countdownValue.ToString();
-    //        Debug.Log("countdownValue: " + countdownValue);
-    //        Debug.Log("countdownText: " + countdownText.name);
-
-    //        iconLevelCapTextValue = data.iconLevelCapTextValue;
-    //        iconLevelCapText.text = iconLevelCapTextValue.ToString();
-
-    //        iconLevelTextValue = data.iconLevelTextValue;
-    //        iconLevelText.text = iconLevelTextValue.ToString();
-
-    //        progressBarTextValue = data.progressBarTextValue;
-    //        progressBarText.text = progressBarTextValue.ToString("F2");
-
-    //        upgradeButtonValue = data.upgradeButtonValue;
-    //        upgradeButtonText.text = upgradeButtonValue.ToString("F2");
-
-    //        isActivationButtonClicked = data.isActivationButtonClicked;
-
-    //        isManagerBought = data.isManagerBought;
-    //        if (isManagerBought)
-    //        {
-    //            Destroy(managerButton.gameObject);
-    //            gameManager.blockList.Remove(this);
-    //            iconButtonObj.interactable = false;
-    //            StartCoroutine(Managing());
-    //        }
-
-    //    }
-    //    else
-    //    {
-    //        Debug.LogWarning("Save file not found: " + filePath);
-    //    }
-    //}
-    public void SaveGame()
+    public void LoadData(string fileName)
     {
-        PlayerPrefs.Save();
-        Debug.Log("Save alýndý");
-        Debug.Log(progressBarTextValue);
-    }
-    public void LoadGame()
-    {
-        float tempProgressBarTextValue = PlayerPrefs.GetFloat(nameof(progressBarTextValue));
-        progressBarTextValue = tempProgressBarTextValue;
-        Debug.Log(tempProgressBarTextValue);
-        progressBarText.text = progressBarTextValue.ToString("F2");
+        string filePath = Application.persistentDataPath + "/" + fileName + ".json";
 
-        upgradeButtonValue = PlayerPrefs.GetFloat(nameof(upgradeButtonValue));
-        upgradeButtonText.text = upgradeButtonValue.ToString("F2");
-
-        iconLevelTextValue = PlayerPrefs.GetFloat(nameof(iconLevelTextValue));
-        iconLevelText.text = iconLevelTextValue.ToString();
-
-        iconLevelCapTextValue = PlayerPrefs.GetFloat(nameof(iconLevelCapTextValue));
-        iconLevelCapText.text = iconLevelCapTextValue.ToString();
-
-        countdownValue = PlayerPrefs.GetFloat(nameof(countdownValue));
-        countdownText.text = countdownValue.ToString();
-
-
-
-        isManagerBought = PlayerPrefs.GetInt(nameof(isManagerBought)) == 1;
-        if (isManagerBought)
+        if (File.Exists(filePath))
         {
-            Destroy(managerButton.gameObject);
-            gameManager.blockList.Remove(this);
-            iconButtonObj.interactable = false;
-            StartCoroutine(Managing());
-        }
+            string json = File.ReadAllText(filePath);
+            BlockSystemData data = JsonUtility.FromJson<BlockSystemData>(json);
 
-        isActivationButtonClicked = PlayerPrefs.GetInt(nameof(isActivationButtonClicked)) == 1;
+            activationButtonValue = data.activationButtonValue;
+
+            managerPriceValue = data.managerPriceValue;
+
+            countdownValue = data.countdownValue;
+            countdownText.text = countdownValue.ToString();
+            Debug.Log("countdownValue: " + countdownValue);
+            Debug.Log("countdownText: " + countdownText.name);
+
+            iconLevelCapTextValue = data.iconLevelCapTextValue;
+            iconLevelCapText.text = iconLevelCapTextValue.ToString();
+
+            iconLevelTextValue = data.iconLevelTextValue;
+            iconLevelText.text = iconLevelTextValue.ToString();
+
+            progressBarTextValue = data.progressBarTextValue;
+            progressBarText.text = progressBarTextValue.ToString("F2");
+
+            upgradeButtonValue = data.upgradeButtonValue;
+            upgradeButtonText.text = upgradeButtonValue.ToString("F2");
+
+            isActivationButtonClicked = data.isActivationButtonClicked;
+
+            isManagerBought = data.isManagerBought;
+            if (isManagerBought)
+            {
+                Destroy(managerButton.gameObject);
+                gameManager.blockList.Remove(this);
+                iconButtonObj.interactable = false;
+                StartCoroutine(Managing());
+            }
+
+        }
+        else
+        {
+            Debug.LogWarning("Save file not found: " + filePath);
+        }
+    }
+    public void ReopenApp()
+    {
+        if(deltaSecondsAppQuit >= 7200)
+        {
+            deltaSecondsAppQuit = 7200;
+        }
+        float cycleCount = Mathf.Floor(deltaSecondsAppQuit / countdownValue);
+        incomeFromCycle = cycleCount * progressBarTextValue;
     }
 }

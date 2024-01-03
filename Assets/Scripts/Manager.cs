@@ -3,9 +3,7 @@ using UnityEngine.UI;
 
 public class Manager : MonoBehaviour
 {
-    public GameManager gameManager;
-    //public BlockSystem blockSystem;
-   
+    public GameManager gameManager; 
     public float managerPriceValue;
     Button managerButton;
     private void Awake()
@@ -26,6 +24,4 @@ public class Manager : MonoBehaviour
     {
         
     }
-    //main balance manager fiyatýna eþit olunca buton interractible olsun. Ýnteractible olunca da profile bannerdaki manager ikonuun üstünde notification sembolu yansýn
-    //interactible olan tüm butonlarý bir listeye eklemek lazým. Listede herhangi bir eleman olunca da notification sembolünün yanmasý lazým. Liste boþ ise sembol yok.
 }
