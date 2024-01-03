@@ -1,6 +1,6 @@
 # Incremental Game Example
 
-![Game Screenshot](Screenshots/gameplay_screenshot.png)
+![Game Screenshot](Screenshots/gameplay_screenshot.gif)
 
 This Unity project demonstrates the implementation of an incremental game featuring a block-based system. Each block operates independently, and the game manager controls various aspects such as upgrades, activations, and savings.
 
