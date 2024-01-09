@@ -1,4 +1,4 @@
-# Incremental Game Example
+# Idle Clicker Game
 
 ![Game Screenshot](Screenshots/gameplay_screenshot.gif)
 
